@@ -1,21 +1,21 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  ClockIcon, 
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  ClockIcon,
   ExclamationCircleIcon,
   ArrowLeftIcon,
   ShieldExclamationIcon,
   CheckCircleIcon,
   QuestionMarkCircleIcon,
   ArrowRightIcon,
-  XCircleIcon
-} from '@heroicons/react/24/outline';
+  XCircleIcon,
+} from "@heroicons/react/24/outline";
 
 export default function TakeExam() {
   const { examId } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [exam, setExam] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -33,41 +33,48 @@ export default function TakeExam() {
   useEffect(() => {
     const loadExam = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:5000/api/exams/${examId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          `http://localhost:9999/api/exams/${examId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
 
         const data = await response.json();
-        console.log('Loaded exam data:', data);
-        console.log('Questions:', data.data?.questions);
+        console.log("Loaded exam data:", data);
+        console.log("Questions:", data.data?.questions);
 
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to fetch exam');
+          throw new Error(data.error || "Failed to fetch exam");
         }
-        
-        if (!data.data || !data.data.questions || data.data.questions.length === 0) {
-          throw new Error('Invalid exam data received');
+
+        if (
+          !data.data ||
+          !data.data.questions ||
+          data.data.questions.length === 0
+        ) {
+          throw new Error("Invalid exam data received");
         }
 
         // Transform the questions data to match the expected format
         const transformedExam = {
           ...data.data,
-          questions: data.data.questions.map(q => ({
+          questions: data.data.questions.map((q) => ({
             text: q.text,
-            options: q.options.map(opt => opt.text || opt)
-          }))
+            options: q.options.map((opt) => opt.text || opt),
+          })),
         };
 
-        console.log('Transformed exam data:', transformedExam);
+        console.log("Transformed exam data:", transformedExam);
         setExam(transformedExam);
         setTimeLeft(data.data.duration * 60); // Convert minutes to seconds
         setIsPageLoaded(true);
       } catch (err) {
-        console.error('Error loading exam:', err);
-        setError(err.message || 'Failed to load exam');
+        console.error("Error loading exam:", err);
+        setError(err.message || "Failed to load exam");
       } finally {
         setLoading(false);
       }
@@ -115,39 +122,46 @@ export default function TakeExam() {
     // Disable right click
     const handleContextMenu = (e) => {
       e.preventDefault();
-      handleSecurityViolation('Right-clicking is not allowed during the exam');
+      handleSecurityViolation("Right-clicking is not allowed during the exam");
     };
 
     // Disable keyboard shortcuts
     const handleKeyDown = (e) => {
       // Prevent common shortcuts
       if (
-        (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'p' || e.key === 's')) || // Copy, Paste, Print, Save
-        (e.altKey && e.key === 'PrintScreen') ||
-        e.key === 'PrintScreen'
+        (e.ctrlKey &&
+          (e.key === "c" || e.key === "v" || e.key === "p" || e.key === "s")) || // Copy, Paste, Print, Save
+        (e.altKey && e.key === "PrintScreen") ||
+        e.key === "PrintScreen"
       ) {
         e.preventDefault();
-        handleSecurityViolation('Keyboard shortcuts are not allowed during the exam');
+        handleSecurityViolation(
+          "Keyboard shortcuts are not allowed during the exam"
+        );
       }
     };
 
     // Disable copy and paste
     const handleCopyPaste = (e) => {
       e.preventDefault();
-      handleSecurityViolation('Copying and pasting are not allowed during the exam');
+      handleSecurityViolation(
+        "Copying and pasting are not allowed during the exam"
+      );
     };
 
     // Handle visibility change (tab switching)
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        setTabSwitchCount(prev => {
+        setTabSwitchCount((prev) => {
           const newCount = prev + 1;
           if (newCount >= maxTabSwitches) {
-            handleSecurityViolation('Excessive tab switching detected');
+            handleSecurityViolation("Excessive tab switching detected");
           }
           return newCount;
         });
-        handleSecurityViolation('Switching tabs or windows is not allowed during the exam');
+        handleSecurityViolation(
+          "Switching tabs or windows is not allowed during the exam"
+        );
       }
     };
 
@@ -156,7 +170,7 @@ export default function TakeExam() {
       lastActiveTime = Date.now();
       clearTimeout(inactivityTimeout);
       inactivityTimeout = setTimeout(() => {
-        handleSecurityViolation('User inactivity detected');
+        handleSecurityViolation("User inactivity detected");
       }, 300000); // 5 minutes of inactivity
     };
 
@@ -165,14 +179,14 @@ export default function TakeExam() {
     };
 
     // Add event listeners
-    document.addEventListener('contextmenu', handleContextMenu);
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('copy', handleCopyPaste);
-    document.addEventListener('paste', handleCopyPaste);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    document.addEventListener('mousemove', handleActivity);
-    document.addEventListener('keypress', handleActivity);
-    document.addEventListener('click', handleActivity);
+    document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("copy", handleCopyPaste);
+    document.addEventListener("paste", handleCopyPaste);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("mousemove", handleActivity);
+    document.addEventListener("keypress", handleActivity);
+    document.addEventListener("click", handleActivity);
 
     // Start inactivity timer
     resetInactivityTimer();
@@ -184,69 +198,74 @@ export default function TakeExam() {
           await document.documentElement.requestFullscreen();
         }
       } catch (error) {
-        console.warn('Fullscreen request failed:', error);
-        handleSecurityViolation('Fullscreen mode rejected');
+        console.warn("Fullscreen request failed:", error);
+        handleSecurityViolation("Fullscreen mode rejected");
       }
     };
     requestFullScreen();
 
     return () => {
       // Clean up event listeners and timeouts
-      document.removeEventListener('contextmenu', handleContextMenu);
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('copy', handleCopyPaste);
-      document.removeEventListener('paste', handleCopyPaste);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      document.removeEventListener('mousemove', handleActivity);
-      document.removeEventListener('keypress', handleActivity);
-      document.removeEventListener('click', handleActivity);
+      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("copy", handleCopyPaste);
+      document.removeEventListener("paste", handleCopyPaste);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener("mousemove", handleActivity);
+      document.removeEventListener("keypress", handleActivity);
+      document.removeEventListener("click", handleActivity);
       clearTimeout(autoSubmitTimeout);
       clearTimeout(inactivityTimeout);
     };
   }, [isPageLoaded]);
 
   const handleSelectAnswer = (questionIndex, optionIndex) => {
-    setSelectedAnswers(prev => ({
+    setSelectedAnswers((prev) => ({
       ...prev,
-      [questionIndex]: optionIndex
+      [questionIndex]: optionIndex,
     }));
   };
 
-  const handleSubmit = async (isAutoSubmit = false, reason = '') => {
+  const handleSubmit = async (isAutoSubmit = false, reason = "") => {
     try {
       if (examSubmitted) return;
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
 
       // Format answers for submission
-      const answers = Object.entries(selectedAnswers).map(([questionIndex, selectedOption]) => ({
-        questionIndex: parseInt(questionIndex),
-        selectedOption
-      }));
+      const answers = Object.entries(selectedAnswers).map(
+        ([questionIndex, selectedOption]) => ({
+          questionIndex: parseInt(questionIndex),
+          selectedOption,
+        })
+      );
 
-      const response = await fetch(`http://localhost:5000/api/exams/${examId}/submit`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ answers })
-      });
+      const response = await fetch(
+        `http://localhost:9999/api/exams/${examId}/submit`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ answers }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to submit exam');
+        throw new Error(data.error || "Failed to submit exam");
       }
 
       setExamSubmitted(true);
       alert(`Exam submitted successfully! Your score: ${data.data.score}%`);
-      
+
       // Use the correct path for student dashboard
-      navigate('/student');
+      navigate("/student");
     } catch (err) {
-      console.error('Error submitting exam:', err);
-      setError(err.message || 'Failed to submit exam');
+      console.error("Error submitting exam:", err);
+      setError(err.message || "Failed to submit exam");
     } finally {
       setLoading(false);
     }
@@ -255,23 +274,23 @@ export default function TakeExam() {
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   const showSecurityWarning = (message) => {
-    setWarningCount(prev => {
+    setWarningCount((prev) => {
       const newCount = prev + 1;
-      
+
       // Show warning message with try count
       const warningMessage = `Security Violation (${newCount}/3): ${message}`;
       alert(warningMessage);
-      
+
       // Auto-submit after 3 violations
       if (newCount >= 3) {
-        handleSubmit(true, 'Maximum security violations reached (3/3)');
+        handleSubmit(true, "Maximum security violations reached (3/3)");
         return newCount;
       }
-      
+
       setShowWarning(true);
       setTimeout(() => setShowWarning(false), 3000);
       return newCount;
@@ -291,10 +310,12 @@ export default function TakeExam() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white p-8 rounded-xl shadow-md max-w-md w-full">
           <ExclamationCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-center text-gray-900 mb-2">Error</h2>
+          <h2 className="text-xl font-semibold text-center text-gray-900 mb-2">
+            Error
+          </h2>
           <p className="text-gray-500 text-center mb-6">{error}</p>
           <button
-            onClick={() => navigate('/student')}
+            onClick={() => navigate("/student")}
             className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg transition-all duration-200"
           >
             <ArrowLeftIcon className="h-4 w-4" />
@@ -310,10 +331,14 @@ export default function TakeExam() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white p-8 rounded-xl shadow-md max-w-md w-full">
           <ExclamationCircleIcon className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-center text-gray-900 mb-2">Exam Not Found</h2>
-          <p className="text-gray-500 text-center mb-6">The exam you're looking for doesn't exist or has been removed.</p>
+          <h2 className="text-xl font-semibold text-center text-gray-900 mb-2">
+            Exam Not Found
+          </h2>
+          <p className="text-gray-500 text-center mb-6">
+            The exam you're looking for doesn't exist or has been removed.
+          </p>
           <button
-            onClick={() => navigate('/student')}
+            onClick={() => navigate("/student")}
             className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg transition-all duration-200"
           >
             <ArrowLeftIcon className="h-4 w-4" />
@@ -342,7 +367,11 @@ export default function TakeExam() {
       {/* Security Status Indicator */}
       <div className="fixed top-4 left-4 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-md z-50">
         <div className="flex items-center gap-2">
-          <ShieldExclamationIcon className={`h-5 w-5 ${warningCount > 0 ? 'text-red-500' : 'text-green-500'}`} />
+          <ShieldExclamationIcon
+            className={`h-5 w-5 ${
+              warningCount > 0 ? "text-red-500" : "text-green-500"
+            }`}
+          />
           <span className="text-sm font-medium">
             Violations: {warningCount}/3
           </span>
@@ -354,7 +383,9 @@ export default function TakeExam() {
         <div className="bg-white rounded-xl shadow-md p-6 mb-6">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">{exam.title}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                {exam.title}
+              </h1>
               <p className="text-gray-500">{exam.subject}</p>
             </div>
             <div className="flex items-center gap-4">
@@ -370,7 +401,11 @@ export default function TakeExam() {
           <div className="w-full bg-gray-200 rounded-full h-1">
             <div
               className="bg-primary rounded-full h-1 transition-all duration-300"
-              style={{ width: `${((currentQuestion + 1) / exam.questions.length) * 100}%` }}
+              style={{
+                width: `${
+                  ((currentQuestion + 1) / exam.questions.length) * 100
+                }%`,
+              }}
             />
           </div>
         </div>
@@ -378,7 +413,7 @@ export default function TakeExam() {
         {/* Question Card */}
         <div className="bg-white rounded-xl shadow-md p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            {currentQuestionData?.text || 'No question text available'}
+            {currentQuestionData?.text || "No question text available"}
           </h2>
           <div className="space-y-3">
             {currentQuestionData?.options?.map((option, index) => (
@@ -387,8 +422,8 @@ export default function TakeExam() {
                 onClick={() => handleSelectAnswer(currentQuestion, index)}
                 className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${
                   selectedAnswers[currentQuestion] === index
-                    ? 'border-primary bg-primary/5 text-primary'
-                    : 'border-gray-200 hover:border-primary/50'
+                    ? "border-primary bg-primary/5 text-primary"
+                    : "border-gray-200 hover:border-primary/50"
                 }`}
               >
                 {option}
@@ -400,12 +435,12 @@ export default function TakeExam() {
         {/* Navigation Buttons */}
         <div className="flex justify-between items-center">
           <button
-            onClick={() => setCurrentQuestion(prev => Math.max(0, prev - 1))}
+            onClick={() => setCurrentQuestion((prev) => Math.max(0, prev - 1))}
             disabled={currentQuestion === 0}
             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
               currentQuestion === 0
-                ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
-                : 'text-primary hover:bg-primary/10'
+                ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                : "text-primary hover:bg-primary/10"
             }`}
           >
             <ArrowLeftIcon className="h-4 w-4" />
@@ -414,7 +449,10 @@ export default function TakeExam() {
           {currentQuestion === exam.questions.length - 1 ? (
             <button
               onClick={handleSubmit}
-              disabled={loading || Object.keys(selectedAnswers).length !== exam.questions.length}
+              disabled={
+                loading ||
+                Object.keys(selectedAnswers).length !== exam.questions.length
+              }
               className="flex items-center gap-2 px-6 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Submit Exam
@@ -422,7 +460,11 @@ export default function TakeExam() {
             </button>
           ) : (
             <button
-              onClick={() => setCurrentQuestion(prev => Math.min(exam.questions.length - 1, prev + 1))}
+              onClick={() =>
+                setCurrentQuestion((prev) =>
+                  Math.min(exam.questions.length - 1, prev + 1)
+                )
+              }
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-all duration-200"
             >
               Next
@@ -440,10 +482,10 @@ export default function TakeExam() {
                 onClick={() => setCurrentQuestion(index)}
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200 ${
                   currentQuestion === index
-                    ? 'bg-primary text-white'
+                    ? "bg-primary text-white"
                     : selectedAnswers[index] !== undefined
-                    ? 'bg-primary/10 text-primary'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    ? "bg-primary/10 text-primary"
+                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                 }`}
               >
                 {index + 1}
@@ -454,4 +496,4 @@ export default function TakeExam() {
       </div>
     </div>
   );
-} 
+}

@@ -32,7 +32,7 @@ export default function EditExam() {
   const fetchExamDetails = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/exams/${examId}`, {
+      const response = await fetch(`http://localhost:9999/api/exams/${examId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -119,7 +119,7 @@ export default function EditExam() {
 
       console.log('Sending exam data:', examData); // Debug log
 
-      const response = await fetch(`http://localhost:5000/api/exams/${examId}`, {
+      const response = await fetch(`http://localhost:9999/api/exams/${examId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

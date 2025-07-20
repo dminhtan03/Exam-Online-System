@@ -101,7 +101,7 @@ export default function CreateExam() {
 
       console.log('Creating exam with data:', formData);
       
-      const response = await fetch('http://localhost:5000/api/exams', {
+      const response = await fetch('http://localhost:9999/api/exams', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

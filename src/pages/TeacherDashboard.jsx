@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { 
-  AcademicCapIcon, 
-  ClockIcon, 
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  AcademicCapIcon,
+  ClockIcon,
   CheckCircleIcon,
   ArrowRightOnRectangleIcon,
   BookOpenIcon,
@@ -13,35 +13,35 @@ import {
   DocumentTextIcon,
   CalendarIcon,
   XCircleIcon,
-  ArrowRightIcon
-} from '@heroicons/react/24/outline';
-import { toast } from 'react-hot-toast';
+  ArrowRightIcon,
+} from "@heroicons/react/24/outline";
+import { toast } from "react-hot-toast";
 
 export default function TeacherDashboard() {
   const navigate = useNavigate();
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [stats, setStats] = useState({
     totalExams: 0,
     totalSubmissions: 0,
     pendingVerification: 0,
-    averageScore: 0
+    averageScore: 0,
   });
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    
+    const token = localStorage.getItem("token");
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+
     if (!token) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
     // Verify teacher role
-    if (userData.role !== 'teacher') {
-      toast.error('Access denied. Teacher privileges required.');
-      navigate('/login');
+    if (userData.role !== "teacher") {
+      toast.error("Access denied. Teacher privileges required.");
+      navigate("/login");
       return;
     }
 
@@ -50,101 +50,109 @@ export default function TeacherDashboard() {
 
   const fetchExams = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      
-      console.log('Fetching exams for teacher:', userData.id);
-      
-      const response = await fetch('http://localhost:5000/api/exams', {
+      const token = localStorage.getItem("token");
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+
+      console.log("Fetching exams for teacher:", userData.id);
+
+      const response = await fetch("http://localhost:9999/api/exams", {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to fetch exams');
+        throw new Error(data.error || "Failed to fetch exams");
       }
 
       const data = await response.json();
-      console.log('Fetched exams data:', data);
-      
+      console.log("Fetched exams data:", data);
+
       // The backend should already filter exams for the teacher
       // No need to filter again on the frontend
       setExams(data.data || []);
-      console.log('Setting exams:', data.data);
+      console.log("Setting exams:", data.data);
 
       // Calculate stats
-      const totalSubmissions = data.data.reduce((acc, exam) => 
-        acc + (exam.submissions?.length || 0), 0
+      const totalSubmissions = data.data.reduce(
+        (acc, exam) => acc + (exam.submissions?.length || 0),
+        0
       );
 
-      const pendingVerification = data.data.reduce((acc, exam) => 
-        acc + (exam.submissions?.filter(sub => !sub.verified)?.length || 0), 0
+      const pendingVerification = data.data.reduce(
+        (acc, exam) =>
+          acc + (exam.submissions?.filter((sub) => !sub.verified)?.length || 0),
+        0
       );
 
       const allScores = data.data
-        .flatMap(exam => exam.submissions || [])
-        .filter(sub => sub.verified)
-        .map(sub => sub.score || 0);
+        .flatMap((exam) => exam.submissions || [])
+        .filter((sub) => sub.verified)
+        .map((sub) => sub.score || 0);
 
-      const averageScore = allScores.length > 0
-        ? Math.round((allScores.reduce((a, b) => a + b, 0) / allScores.length) * 10) / 10
-        : 0;
+      const averageScore =
+        allScores.length > 0
+          ? Math.round(
+              (allScores.reduce((a, b) => a + b, 0) / allScores.length) * 10
+            ) / 10
+          : 0;
 
       setStats({
         totalExams: data.data.length,
         totalSubmissions,
         pendingVerification,
-        averageScore
+        averageScore,
       });
-
     } catch (err) {
-      console.error('Error fetching exams:', err);
-      setError(err.message || 'Something went wrong');
+      console.error("Error fetching exams:", err);
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userData');
-    navigate('/login');
+    localStorage.removeItem("token");
+    localStorage.removeItem("userData");
+    navigate("/login");
   };
 
   const handleCreateExam = () => {
-    navigate('/create-exam');
+    navigate("/create-exam");
   };
 
   const handleEditExam = async (examId) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      
+      const token = localStorage.getItem("token");
+
       // Fetch the exam details first
-      const response = await fetch(`http://localhost:5000/api/exams/${examId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const response = await fetch(
+        `http://localhost:9999/api/exams/${examId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to fetch exam details');
+        throw new Error(data.error || "Failed to fetch exam details");
       }
 
       const data = await response.json();
-      console.log('Fetched exam details:', data);
-      
+      console.log("Fetched exam details:", data);
+
       // Store the exam data in localStorage for editing
-      localStorage.setItem('editExam', JSON.stringify(data.data));
-      
+      localStorage.setItem("editExam", JSON.stringify(data.data));
+
       // Navigate to edit page
       navigate(`/edit-exam/${examId}`);
     } catch (err) {
-      console.error('Error fetching exam details:', err);
-      setError(err.message || 'Failed to fetch exam details');
+      console.error("Error fetching exam details:", err);
+      setError(err.message || "Failed to fetch exam details");
     } finally {
       setLoading(false);
     }
@@ -153,77 +161,87 @@ export default function TeacherDashboard() {
   const handleViewSubmissions = async (examId) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      
+      const token = localStorage.getItem("token");
+
       // Fetch the exam details with submissions
-      const response = await fetch(`http://localhost:5000/api/exams/${examId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const response = await fetch(
+        `http://localhost:9999/api/exams/${examId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to fetch exam submissions');
+        throw new Error(data.error || "Failed to fetch exam submissions");
       }
 
       const data = await response.json();
-      console.log('Fetched exam submissions:', data);
-      
+      console.log("Fetched exam submissions:", data);
+
       // Store the exam data in localStorage for viewing submissions
-      localStorage.setItem('examSubmissions', JSON.stringify(data.data));
-      
+      localStorage.setItem("examSubmissions", JSON.stringify(data.data));
+
       // Navigate to submissions page
       navigate(`/exam-submissions/${examId}`);
     } catch (err) {
-      console.error('Error fetching exam submissions:', err);
-      setError(err.message || 'Failed to fetch exam submissions');
+      console.error("Error fetching exam submissions:", err);
+      setError(err.message || "Failed to fetch exam submissions");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteExam = async (examId) => {
-    if (!window.confirm('Are you sure you want to delete this exam? This action cannot be undone.')) {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this exam? This action cannot be undone."
+      )
+    ) {
       return;
     }
 
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/exams/${examId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:9999/api/exams/${examId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to delete exam');
+        throw new Error(data.error || "Failed to delete exam");
       }
 
       // Show success toast
-      toast.success('Exam deleted successfully', {
+      toast.success("Exam deleted successfully", {
         duration: 3000,
-        position: 'top-right',
+        position: "top-right",
         style: {
-          background: '#4CAF50',
-          color: '#fff',
+          background: "#4CAF50",
+          color: "#fff",
         },
       });
 
       // Refresh the exams list
       fetchExams();
     } catch (err) {
-      console.error('Error deleting exam:', err);
+      console.error("Error deleting exam:", err);
       // Show error toast
-      toast.error(err.message || 'Failed to delete exam', {
+      toast.error(err.message || "Failed to delete exam", {
         duration: 3000,
-        position: 'top-right',
+        position: "top-right",
         style: {
-          background: '#f44336',
-          color: '#fff',
+          background: "#f44336",
+          color: "#fff",
         },
       });
     } finally {
@@ -247,7 +265,9 @@ export default function TeacherDashboard() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <BookOpenIcon className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold text-gray-900">Teacher Dashboard</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Teacher Dashboard
+              </h1>
             </div>
             <div className="flex items-center space-x-6">
               <div className="flex items-center gap-2">
@@ -255,7 +275,8 @@ export default function TeacherDashboard() {
                   <AcademicCapIcon className="h-5 w-5 text-primary" />
                 </div>
                 <span className="text-gray-600 font-medium">
-                  {JSON.parse(localStorage.getItem('userData') || '{}').name || 'Teacher'}
+                  {JSON.parse(localStorage.getItem("userData") || "{}").name ||
+                    "Teacher"}
                 </span>
               </div>
               <button
@@ -277,39 +298,53 @@ export default function TeacherDashboard() {
             {error}
           </div>
         )}
-        
+
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center gap-3 mb-2">
               <DocumentTextIcon className="h-6 w-6 text-primary" />
-              <h3 className="text-lg font-semibold text-gray-900">Total Exams</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Total Exams
+              </h3>
             </div>
-            <p className="text-3xl font-bold text-gray-900">{stats.totalExams}</p>
+            <p className="text-3xl font-bold text-gray-900">
+              {stats.totalExams}
+            </p>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center gap-3 mb-2">
               <UserGroupIcon className="h-6 w-6 text-blue-500" />
-              <h3 className="text-lg font-semibold text-gray-900">Submissions</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Submissions
+              </h3>
             </div>
-            <p className="text-3xl font-bold text-gray-900">{stats.totalSubmissions}</p>
+            <p className="text-3xl font-bold text-gray-900">
+              {stats.totalSubmissions}
+            </p>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center gap-3 mb-2">
               <ClockIcon className="h-6 w-6 text-yellow-500" />
               <h3 className="text-lg font-semibold text-gray-900">Pending</h3>
             </div>
-            <p className="text-3xl font-bold text-gray-900">{stats.pendingVerification}</p>
+            <p className="text-3xl font-bold text-gray-900">
+              {stats.pendingVerification}
+            </p>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center gap-3 mb-2">
               <AcademicCapIcon className="h-6 w-6 text-green-500" />
-              <h3 className="text-lg font-semibold text-gray-900">Avg. Score</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Avg. Score
+              </h3>
             </div>
-            <p className="text-3xl font-bold text-gray-900">{stats.averageScore}%</p>
+            <p className="text-3xl font-bold text-gray-900">
+              {stats.averageScore}%
+            </p>
           </div>
         </div>
 
@@ -331,7 +366,9 @@ export default function TeacherDashboard() {
             <div className="bg-white rounded-xl shadow-md p-8 text-center">
               <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">No exams created yet</p>
-              <p className="text-sm text-gray-400 mt-2">Create your first exam to get started</p>
+              <p className="text-sm text-gray-400 mt-2">
+                Create your first exam to get started
+              </p>
             </div>
           ) : (
             exams.map((exam) => (
@@ -404,4 +441,4 @@ export default function TeacherDashboard() {
       </main>
     </div>
   );
-} 
+}

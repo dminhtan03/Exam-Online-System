@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   CheckCircleIcon,
   ClockIcon,
@@ -7,16 +7,16 @@ import {
   ArrowLeftIcon,
   UserIcon,
   DocumentTextIcon,
-  CheckIcon
-} from '@heroicons/react/24/outline';
-import StudentExamView from '../components/StudentExamView';
+  CheckIcon,
+} from "@heroicons/react/24/outline";
+import StudentExamView from "../components/StudentExamView";
 
 export default function ExamSubmissions() {
   const { examId } = useParams();
   const navigate = useNavigate();
   const [exam, setExam] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchExamDetails();
@@ -24,23 +24,26 @@ export default function ExamSubmissions() {
 
   const fetchExamDetails = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/exams/${examId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:9999/api/exams/${examId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to fetch exam details');
+        throw new Error(data.error || "Failed to fetch exam details");
       }
 
       const data = await response.json();
       setExam(data.data);
     } catch (err) {
-      console.error('Error fetching exam details:', err);
-      setError(err.message || 'Failed to fetch exam details');
+      console.error("Error fetching exam details:", err);
+      setError(err.message || "Failed to fetch exam details");
     } finally {
       setLoading(false);
     }
@@ -49,24 +52,27 @@ export default function ExamSubmissions() {
   const handleVerifySubmission = async (submissionId) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/exams/${examId}/verify/${submissionId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:9999/api/exams/${examId}/verify/${submissionId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to verify submission');
+        throw new Error(data.error || "Failed to verify submission");
       }
 
       await fetchExamDetails();
-      alert('Submission verified successfully!');
+      alert("Submission verified successfully!");
     } catch (err) {
-      console.error('Error verifying submission:', err);
-      setError(err.message || 'Failed to verify submission');
+      console.error("Error verifying submission:", err);
+      setError(err.message || "Failed to verify submission");
     } finally {
       setLoading(false);
     }
@@ -85,10 +91,14 @@ export default function ExamSubmissions() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white p-8 rounded-xl shadow-md max-w-md w-full">
           <XCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-center text-gray-900 mb-2">Exam Not Found</h2>
-          <p className="text-gray-500 text-center mb-6">The exam you're looking for doesn't exist or has been removed.</p>
+          <h2 className="text-xl font-semibold text-center text-gray-900 mb-2">
+            Exam Not Found
+          </h2>
+          <p className="text-gray-500 text-center mb-6">
+            The exam you're looking for doesn't exist or has been removed.
+          </p>
           <button
-            onClick={() => navigate('/teacher')}
+            onClick={() => navigate("/teacher")}
             className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg transition-all duration-200"
           >
             <ArrowLeftIcon className="h-4 w-4" />
@@ -105,11 +115,15 @@ export default function ExamSubmissions() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{exam.title} - Submissions</h1>
-            <p className="mt-1 text-sm text-gray-500">View and verify student submissions</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {exam.title} - Submissions
+            </h1>
+            <p className="mt-1 text-sm text-gray-500">
+              View and verify student submissions
+            </p>
           </div>
           <button
-            onClick={() => navigate('/teacher')}
+            onClick={() => navigate("/teacher")}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
           >
             <ArrowLeftIcon className="h-5 w-5" />
@@ -132,7 +146,9 @@ export default function ExamSubmissions() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Total Questions</p>
-                <p className="text-xl font-bold text-gray-900">{exam.questions.length}</p>
+                <p className="text-xl font-bold text-gray-900">
+                  {exam.questions.length}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -141,7 +157,9 @@ export default function ExamSubmissions() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Total Submissions</p>
-                <p className="text-xl font-bold text-gray-900">{exam.submissions?.length || 0}</p>
+                <p className="text-xl font-bold text-gray-900">
+                  {exam.submissions?.length || 0}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -151,7 +169,8 @@ export default function ExamSubmissions() {
               <div>
                 <p className="text-sm text-gray-600">Pending Verification</p>
                 <p className="text-xl font-bold text-gray-900">
-                  {exam.submissions?.filter(sub => !sub.verified)?.length || 0}
+                  {exam.submissions?.filter((sub) => !sub.verified)?.length ||
+                    0}
                 </p>
               </div>
             </div>
@@ -162,7 +181,7 @@ export default function ExamSubmissions() {
               <div>
                 <p className="text-sm text-gray-600">Verified</p>
                 <p className="text-xl font-bold text-gray-900">
-                  {exam.submissions?.filter(sub => sub.verified)?.length || 0}
+                  {exam.submissions?.filter((sub) => sub.verified)?.length || 0}
                 </p>
               </div>
             </div>
@@ -172,9 +191,11 @@ export default function ExamSubmissions() {
         {/* Submissions List */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Student Submissions</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Student Submissions
+            </h2>
           </div>
-          
+
           {exam.submissions?.length === 0 ? (
             <div className="p-8 text-center">
               <UserIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -192,7 +213,8 @@ export default function ExamSubmissions() {
                       <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                           <ClockIcon className="h-4 w-4" />
-                          Submitted: {new Date(submission.submittedAt).toLocaleString()}
+                          Submitted:{" "}
+                          {new Date(submission.submittedAt).toLocaleString()}
                         </div>
                         <div className="flex items-center gap-1">
                           <DocumentTextIcon className="h-4 w-4" />
@@ -212,8 +234,8 @@ export default function ExamSubmissions() {
                   </div>
 
                   {/* Use the new StudentExamView component */}
-                  <StudentExamView 
-                    submission={submission} 
+                  <StudentExamView
+                    submission={submission}
                     questions={exam.questions}
                   />
                 </div>
@@ -224,4 +246,4 @@ export default function ExamSubmissions() {
       </div>
     </div>
   );
-} 
+}
